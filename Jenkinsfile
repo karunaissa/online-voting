@@ -48,6 +48,7 @@ pipeline {
 
                 # Run tests inside the Flask container
                 docker-compose exec -T $WEB_SERVICE /bin/bash -c '
+                    export PYTHONPATH=/app &&
                     pytest -v --maxfail=1 --disable-warnings --ignore=tests/test_ui.py --junitxml=report.xml
                 '
 
