@@ -24,12 +24,10 @@ pipeline {
                 // Wait for services to be healthy
                 echo 'Waiting for Redis and Flask to be ready...'
                 sh """
-                # Wait up to 30 seconds for Redis
                 for i in {1..30}; do
                     docker-compose exec -T $REDIS_SERVICE redis-cli ping &>/dev/null && break || sleep 1
                 done
 
-                # Wait up to 30 seconds for Flask
                 for i in {1..30}; do
                     docker-compose exec -T $WEB_SERVICE curl -s http://localhost:5000/ &>/dev/null && break || sleep 1
                 done
@@ -40,17 +38,21 @@ pipeline {
             }
         }
 
-        stage('Run Tests') {
+        stage('Run Tests with Logs') {
             steps {
-                echo 'Running tests inside the Flask container...'
+                echo 'Streaming Flask and Redis logs while running tests...'
                 sh """
+                # Stream logs in background
+                docker-compose logs -f $WEB_SERVICE > flask.log 2>&1 &
+                docker-compose logs -f $REDIS_SERVICE > redis.log 2>&1 &
+
+                # Run tests inside the Flask container
                 docker-compose exec -T $WEB_SERVICE /bin/bash -c '
-                    python3 -m venv venv &&
-                    . venv/bin/activate &&
-                    pip install --upgrade pip &&
-                    pip install -r requirements.txt &&
                     pytest -v --maxfail=1 --disable-warnings --ignore=tests/test_ui.py --junitxml=report.xml
                 '
+
+                # Kill background log tailing
+                pkill -f "docker-compose logs -f"
                 """
             }
         }
