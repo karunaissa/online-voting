@@ -10,7 +10,7 @@ pipeline {
 
         stage('Run Containers') {
             steps {
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
                 // small delay to ensure services are up
                 sh 'sleep 5'
             }
@@ -31,7 +31,7 @@ pipeline {
 
         stage('Tear Down') {
             steps {
-                sh 'docker-compose down'
+                sh 'docker compose down'
             }
         }
     }
