@@ -4,8 +4,8 @@ pipeline {
     environment {
         APP_IMAGE = 'online-voting-system'
         COMPOSE_FILE = 'docker-compose.yml'
-        WEB_CONTAINER = 'online-voting-system-web-1'
-        REDIS_CONTAINER = 'online-voting-system-redis-1'
+        WEB_SERVICE = 'web'
+        REDIS_SERVICE = 'redis'
     }
 
     stages {
@@ -26,12 +26,12 @@ pipeline {
                 sh """
                 # Wait up to 30 seconds for Redis
                 for i in {1..30}; do
-                    docker exec $REDIS_CONTAINER redis-cli ping &>/dev/null && break || sleep 1
+                    docker-compose exec -T $REDIS_SERVICE redis-cli ping &>/dev/null && break || sleep 1
                 done
 
                 # Wait up to 30 seconds for Flask
                 for i in {1..30}; do
-                    docker exec $WEB_CONTAINER curl -s http://localhost:5000/ &>/dev/null && break || sleep 1
+                    docker-compose exec -T $WEB_SERVICE curl -s http://localhost:5000/ &>/dev/null && break || sleep 1
                 done
 
                 echo "Services are ready!"
@@ -44,7 +44,7 @@ pipeline {
             steps {
                 echo 'Running tests inside the Flask container...'
                 sh """
-                docker exec -i $WEB_CONTAINER /bin/bash -c '
+                docker-compose exec -T $WEB_SERVICE /bin/bash -c '
                     python3 -m venv venv &&
                     . venv/bin/activate &&
                     pip install --upgrade pip &&
