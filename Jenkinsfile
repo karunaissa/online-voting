@@ -34,7 +34,8 @@ pipeline {
                 sh 'python3 -m venv venv'
                 sh '. venv/bin/activate && pip install --upgrade pip'
                 sh '. venv/bin/activate && pip install -r requirements.txt'
-                sh '. venv/bin/activate && pytest -v --maxfail=1 --disable-warnings --ignore=tests/test_ui.py --junitxml=report.xml'
+                echo 'Running tests...'
+                sh 'export PYTHONPATH=$PYTHONPATH:$(pwd) && . venv/bin/activate && pytest -v --maxfail=1 --disable-warnings --ignore=tests/test_ui.py --junitxml=report.xml'
             }
         }
 
