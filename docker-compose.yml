@@ -9,13 +9,13 @@ services:
       - REDIS_HOST=redis
     depends_on:
       redis:
-        condition: service_healthy   # 👈 wait for redis health check
+        condition: service_healthy
 
   redis:
     image: redis:alpine
     ports:
       - "6379:6379"
-    healthcheck:                    # 👈 health check added
+    healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
